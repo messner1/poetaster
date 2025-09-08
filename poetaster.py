@@ -94,7 +94,7 @@ def main():
     character_index = 0
     win = False
 
-
+    load_screen(create_judge_callback, "Creating a judge...")
 
     # Main game loop
     while not win:
