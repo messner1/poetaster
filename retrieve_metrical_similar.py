@@ -18,8 +18,6 @@ def get_judge_context():
     poetry_docs = np.load("metrical_embeddings.npy")
 
 
-
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model_id = "google/embeddinggemma-300M"
@@ -31,14 +29,12 @@ def get_judge_context():
     similarities = 1 - cdist(embedding, poetry_docs)
 
     descending = np.argsort(similarities)[0][::-1]
-    print(descending)
-    print(descending.shape)
     with open("context_poems.txt", "wt") as c_out, open("authors.json", "wt") as authors_out:
         authors = []
         for i,match in enumerate(descending[0:10]):
             #print(poetry[match])
             author = poetry[match]["author"].split(",")
-            authors.append(author)
+            authors.append(author[1] +" " + author[0])
             c_out.write(f"{i+1} {author[1]} {author[0]}\n{poetry[match]['text']}\n\n")
         json.dump(authors, authors_out)
 
