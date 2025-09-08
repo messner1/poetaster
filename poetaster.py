@@ -161,7 +161,7 @@ def lose_screen():
 def setup_callback():
     if not os.path.exists("metrical_embeddings.npy"):
         if not os.path.exists("metrical_poetry.jsonl"):
-            load_mtw()aa
+            load_mtw()
         get_embeddings()
 
 
