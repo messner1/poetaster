@@ -18,7 +18,7 @@ WIN_THRESHOLD = 50  # Example win threshold (adjust according to your scoring fu
 
 # Set up display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Educational Game")
+pygame.display.set_caption("Poetaster")
 font = pygame.font.Font(None, FONT_SIZE)
 
 # Colors
@@ -55,7 +55,6 @@ def load_screen(callback, message_text):
 
         pygame.display.update()
 
-        # Call callback to determine if loading should stop
         loading = callback()
 
         for event in pygame.event.get():
@@ -160,10 +159,11 @@ def lose_screen():
     main_menu()  # Return to main menu after losing
 
 def setup_callback():
-    if not os.exists("metrical_poetry.jsonl"):
-        load_mtw()
-    if not os.exists("metrical_embeddings.npy"):
+    if not os.path.exists("metrical_embeddings.npy"):
+        if not os.path.exists("metrical_poetry.jsonl"):
+            load_mtw()aa
         get_embeddings()
+
 
     return False  # For demo purposes, it returns False immediately
 
