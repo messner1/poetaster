@@ -5,6 +5,7 @@ import os
 from load_metrical import load_mtw
 from get_metrical_embeddings import get_embeddings
 from retrieve_metrical_similar import get_judge_context
+from create_judge import create_judge
 
 # Initialize Pygame
 pygame.init()
@@ -86,6 +87,7 @@ def main_menu():
 
 def create_judge_callback():
     get_judge_context()
+    create_judge()
 
 def main():
     input_buffer = ""
