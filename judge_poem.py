@@ -4,6 +4,7 @@ import json
 import logging
 logging.getLogger("transformers").setLevel(logging.ERROR)
 transformers.logging.disable_progress_bar()
+logging.getLogger("torch").setLevel(logging.ERROR)
 
 def judge_poem(judge_desc, submitted_poem):
     model_id = "meta-llama/Llama-3.1-8B-Instruct"

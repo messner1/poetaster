@@ -39,47 +39,52 @@ def generate_critic(stdscr):
 def main_menu(stdscr):
     while True:
         stdscr.clear()
-        stdscr.addstr(curses.LINES // 2 - 1, (curses.COLS // 2) - 5, "Main Menu")
+        stdscr.addstr(curses.LINES // 2 - 1, (curses.COLS // 2) - 5, "Poetaster")
         stdscr.addstr(curses.LINES // 2 + 2, (curses.COLS // 2) - 5, "1. Play")
         stdscr.addstr(curses.LINES // 2 + 3, (curses.COLS // 2) - 5, "2. Exit")
         stdscr.refresh()
 
         key = stdscr.getch()
 
-        if key == ord('1'):
+        if key == ord("1"):
             critic_desc = generate_critic(stdscr)
             main_game(stdscr, critic_desc)  # Start the game if "Play" is selected
-        elif key == ord('2'):
+        elif key == ord("2"):
             break  # Exit the game
 
 def main_game(stdscr, critic_desc):
     stdscr.clear()
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
     input_buffer = []
     attempts_left = 3
     feedback = ""
 
     with open("authors.json", "rt") as a_in:
-        authors = json.load(a_in)
+        authors = [i for i in list(set(json.load(a_in))) if "?" not in i]
+        random.shuffle(authors)
 
-    author_hint = random.sample(authors, 1)[0]
+    author_hint = authors.pop()
 
     curses.curs_set(0)
 
     while True:
         stdscr.clear()
-        stdscr.addstr(1, 1, f"Write me somthing like {author_hint} would")
-        stdscr.addstr(2, 1, f"Remaining attempts: {attempts_left}")
-        stdscr.addstr(3, 1, feedback)
-        stdscr.addstr(5, 1, "Inscribe below (Press Ctrl+Enter to submit, Ctrl+L for newline):")
+        stdscr.addstr(1, 1, f"Remaining attempts: {attempts_left}")
+        stdscr.addstr(3, 1, f"Write me somthing in the style of {author_hint}", curses.color_pair(1))
+        stdscr.addstr(5, 1, feedback, curses.color_pair(1))
+        stdscr.addstr(8, 1, "Inscribe below (Press Enter to submit, Ctrl+L for newline):")
+        stdscr.addstr(9, 1, "".join(["-"]*curses.COLS))
         
-        # Display the current multiline input buffer
+        # Display input buffer
         for idx, line in enumerate(input_buffer):
-            stdscr.addstr(6 + idx, 1, line)
+            stdscr.addstr(10 + idx, 1, line)
 
         
-        # Check for time limit
+        # Check for lose condition
         if attempts_left <= 0:
-            lose_screen(stdscr)  # Show lose screen and return to main menu
+            lose_screen(stdscr)
+            return
 
         stdscr.refresh()
 
@@ -93,22 +98,27 @@ def main_game(stdscr, critic_desc):
 
         elif key == 10:  # Enter key
             if len(input_buffer) > 0 and all(line == "" for line in input_buffer):
-                continue  # Ignore empty submits
-            score, feedback = judge_poem(critic_desc, '\n'.join(input_buffer))
+                continue  # Ignore empty buffer
+            stdscr.addstr(10+len(input_buffer), 1, "Calculating your poetic worth...",curses.color_pair(1))
+            stdscr.refresh()
+            score, feedback = judge_poem(critic_desc, "\n".join(input_buffer))
+            stdscr.addstr(10+len(input_buffer), 1, "                                ")
+            stdscr.refresh()
+            author_hint += f" or maybe {authors.pop()}" if len(authors) > 0 else ""
             if score >= WIN_THRESHOLD:
-                win_screen(stdscr)  # If score is above threshold, display win screen
+                win_screen(stdscr)
                 return
             else:
                 attempts_left -= 1
-                feedback = f"{score}: {feedback}"
-                input_buffer = []  # Clear input after scoring
+                feedback = f"I give this a {score}. {feedback}"
+                input_buffer = []
 
         elif key == curses.KEY_LEFT or key == curses.KEY_RIGHT:
-            # Ignore arrow keys
             continue
+
         elif key == 12:  # Ctrl+L
             input_buffer.append("")  # Add a new line
-            #last_input_time = time.time()  # Reset timer
+
         else:
             if len(input_buffer) == 0:
                 input_buffer.append("")  # Start with a new line if empty
