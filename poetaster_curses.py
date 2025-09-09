@@ -10,14 +10,15 @@ import json
 import random
 
 
-# Constants
 N_TRIES = 3
-WIN_THRESHOLD = 8  # Example win threshold (adjust according to your scoring function)
+WIN_THRESHOLD = 7
+
 
 def load_screen(stdscr):
     stdscr.clear()
     loading_text = "Performing initial ingestion of the canon..."
     stdscr.addstr(curses.LINES // 2, (curses.COLS - len(loading_text)) // 2, loading_text)
+    curses.curs_set(0)
     stdscr.refresh()
 
     if not os.path.exists("metrical_embeddings.npy"):
@@ -30,6 +31,7 @@ def generate_critic(stdscr):
     stdscr.clear()
     loading_text = "Generating a critic..."
     stdscr.addstr(curses.LINES // 2, (curses.COLS - len(loading_text)) // 2, loading_text)
+    curses.curs_set(0)
     stdscr.refresh()
     get_judge_context()
     return create_judge()
@@ -55,12 +57,13 @@ def main_game(stdscr, critic_desc):
     input_buffer = []
     attempts_left = 3
     feedback = ""
-    character_index = 0
 
     with open("authors.json", "rt") as a_in:
         authors = json.load(a_in)
 
     author_hint = random.sample(authors, 1)[0]
+
+    curses.curs_set(0)
 
     while True:
         stdscr.clear()

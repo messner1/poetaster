@@ -2,6 +2,9 @@ import transformers
 import torch
 import re
 import json
+import logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+transformers.logging.disable_progress_bar()
 
 def create_judge():
     model_id = "meta-llama/Llama-3.1-8B-Instruct"
@@ -32,12 +35,15 @@ def create_judge():
     ]
 
 
-    pipeline = transformers.pipeline(
-        "text-generation", model=model_id, model_kwargs = {"quantization_config": quant, "device_map": "auto"} #model_kwargs={"dtype": torch.bfloat16}
-    )
-    output = pipeline(messages)
-    raw = output[0]["generated_text"][-1]["content"]
-    js = json.loads(raw)
-    print(js)
-    return js
-
+    for attempt in range(3):
+        try:
+            pipeline = transformers.pipeline(
+                "text-generation", model=model_id, model_kwargs = {"quantization_config": quant, "device_map": "auto"} #model_kwargs={"dtype": torch.bfloat16}
+            )
+            output = pipeline(messages)
+            raw = output[0]["generated_text"][-1]["content"]
+            js = json.loads(raw)
+            print(js)
+            return js
+        except json.JSONDecodeError:
+            continue

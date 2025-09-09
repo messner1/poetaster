@@ -1,6 +1,9 @@
 import transformers
 import torch
 import json
+import logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+transformers.logging.disable_progress_bar()
 
 def judge_poem(judge_desc, submitted_poem):
     model_id = "meta-llama/Llama-3.1-8B-Instruct"
@@ -47,11 +50,16 @@ def judge_poem(judge_desc, submitted_poem):
     ]
 
 
-    pipeline = transformers.pipeline(
-        "text-generation", model=model_id, model_kwargs = {"quantization_config": quant, "device_map": "auto"} #model_kwargs={"dtype": torch.bfloat16}
-    )
-    output = pipeline(messages)
-    raw = output[0]["generated_text"][-1]["content"]
-    js = json.loads(raw)
 
-    return int(js["SCORE"]), js["FEEDBACK"]
+    for attempt in range(3):
+        try:
+            pipeline = transformers.pipeline(
+                "text-generation", model=model_id, model_kwargs = {"quantization_config": quant, "device_map": "auto"} #model_kwargs={"dtype": torch.bfloat16}
+            )
+            output = pipeline(messages)
+            raw = output[0]["generated_text"][-1]["content"]
+            js = json.loads(raw)
+
+            return int(js["SCORE"]), js["FEEDBACK"]
+        except json.JSONDecodeError:
+            continue
